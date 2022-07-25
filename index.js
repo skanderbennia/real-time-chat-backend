@@ -44,9 +44,6 @@ io.on("connection", (socket) => {
     users = removeUser(socket.id, users);
     io.to(roomName).emit("userLeft", usersInRoom);
   });
-  // io.of("/").adapter.on("join-room", (room, id) => {
-  //   console.log(`socket ${id} has joined room ${room}`);
-  // });
 });
 server.listen(4000, () => {
   console.log("Server is running on port 4000");
