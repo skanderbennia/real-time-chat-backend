@@ -34,6 +34,7 @@ io.on("connection", (socket) => {
     io.emit("userJoined", users);
   });
   socket.on("sendMessage", (data) => {
+    console.log(data);
     socket.broadcast.emit("receiveMessage", data);
   });
   socket.on("leave", (data) => {
