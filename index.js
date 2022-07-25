@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
+const mongoose = require("mongoose")
 const http = require("http");
+require("dotenv").config()
 const socketio = require("socket.io");
 const { joinUser, removeUser } = require("./socketUtils");
 let users = [];
@@ -48,3 +50,20 @@ io.on("connection", (socket) => {
 server.listen(4000, () => {
   console.log("Server is running on port 4000");
 });
+
+///DATABASE CONNECTION
+const DB = process.env.DATABASE;
+mongoose.connect(DB, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+const db = mongoose.connection;
+db.on('error', (error) => console.error(error));
+db.once('open', () => console.log('Connected to database ------'));
+
+const messageRouter = require('./routes/Messages')
+app.use('/message',messageRouter)
+
+const roomRouter = require('./routes/Rooms')
+app.use('/room',roomRouter)
