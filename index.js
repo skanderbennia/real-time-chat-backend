@@ -23,28 +23,30 @@ app.get("/rooms", (req, res) => {
     { id: 2, name: "The First Room" },
   ]);
 });
-app.get("/users", (req, res) => {
-  console.log("i was here");
-  res.send(users);
-});
 
 io.on("connection", (socket) => {
   socket.on("join", (data) => {
-    joinUser(socket, data.name, users);
-    io.emit("userJoined", users);
+    joinUser(socket, data.name, data.roomName, users);
+    socket.join(data.roomName);
+    let usersInRoom = users.filter((user) => user.roomName === data.roomName);
+    io.to(data.roomName).emit("userJoined", usersInRoom);
   });
   socket.on("sendMessage", (data) => {
-    console.log(data);
-    socket.broadcast.emit("receiveMessage", data);
-  });
-  socket.on("leave", (data) => {
-    users = removeUser(socket.id, users);
-    // we need to create user left message
-    io.emit("userLeft", users);
+    const roomName = users.find((user) => user.id === socket.id).roomName;
+    socket.broadcast.to(roomName).emit("receiveMessage", data);
   });
   socket.on("disconnect", () => {
+    if (!users.find((user) => user.id === socket.id).roomName) {
+      return;
+    }
+    const roomName = users.find((user) => user.id === socket.id).roomName;
+    const usersInRoom = users.filter((user) => user.roomName === roomName);
     users = removeUser(socket.id, users);
+    io.to(roomName).emit("userLeft", usersInRoom);
   });
+  // io.of("/").adapter.on("join-room", (room, id) => {
+  //   console.log(`socket ${id} has joined room ${room}`);
+  // });
 });
 server.listen(4000, () => {
   console.log("Server is running on port 4000");
